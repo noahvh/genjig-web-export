@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Genjig password reset</title>
+</head>
+<body>
+<h2>Reset Password</h2>
+
+<div id="msg"></div>
+
+<form id="resetForm">
+    <input type="password" id="newPassword" placeholder="New Password" required minlength="6" maxlength="128" />
+	<input type="password" id="confirmPassword" placeholder="Confirm Password" required minlength="6" maxlength="128" />
+    <button type="submit">Submit new password</button>
+</form>
+
+<script>
+    // Regex: any 6–128 chars
+    const passwordRegex = /^.{6,128}$/;
+
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get("id");
+    const token = params.get("t");
+
+    const msgBox = document.getElementById("msg");
+
+    if (!userId || !token) {
+        msgBox.textContent = "Invalid password reset link.";
+        document.getElementById("resetForm").style.display = "none";
+    }
+
+    document.getElementById("resetForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const newPassword = document.getElementById("newPassword").value;
+		const confirm = document.getElementById("confirmPassword").value;
+
+        if (!passwordRegex.test(newPassword)) {
+            msgBox.textContent = "Password must be between 6 and 128 characters.";
+            return;
+        }
+		
+		if (!(newPassword === confirm)) {
+			msgBox.textContent += "Passwords do not match"
+			return;
+		}
+
+        msgBox.textContent = "Submitting...";
+
+        try {
+            const res = await fetch("https://api.genjig.com/api/auth/reset-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: parseInt(userId),
+                    passwordResetToken: token,
+                    newPassword: newPassword
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+                msgBox.textContent = data.error;
+            } else {
+                msgBox.textContent = data.success || "Password changed!";
+                document.getElementById("resetForm").style.display = "none";
+            }
+        } catch (err) {
+            msgBox.textContent = "An error occurred.";
+        }
+    });
+</script>
+</body>
+</html>

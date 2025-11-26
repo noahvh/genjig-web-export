@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Genjig user registration</title>
+</head>
+<body>
+<h2>Register account</h2>
+
+<div id="msg"></div>
+
+<form id="registerForm">
+	<label for="username">Username. Allowed characters: A-Z, a-z, 0-9, ., _, -</label></br>
+	<input type="text" id="username" placeholder="Username" required minlength="3" maxlength="16" /></br>
+	<label for="email">Email (optional). A verification email will be sent when you sign up</label></br>
+	<input type="email" id="email" placeholder="Email (optional)" /></br>
+	<label for="newPassword">Password. 6-128 characters</label></br>
+    <input type="password" id="newPassword" placeholder="New Password" required minlength="6" maxlength="128" /></br>
+	<input type="password" id="confirmPassword" placeholder="Confirm Password" required minlength="6" maxlength="128" /></br>
+    <button type="submit">Sign up!</button>
+</form>
+
+<script>
+    const passwordRegex = /^.{6,128}$/;
+	const usernameRegex = /^[A-Za-z0-9._-]{3,16}$/;
+
+    const params = new URLSearchParams(window.location.search);
+    const guestPassword = params.get("p");
+	const sessionJWT = params.get("t");
+	
+	window.history.replaceState({}, document.title, window.location.pathname);
+
+    const msgBox = document.getElementById("msg");
+
+    if (!guestPassword || !sessionJWT) {
+        msgBox.textContent = "Bad page, please try again";
+    }
+
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const newPassword = document.getElementById("newPassword").value;
+		const confirm = document.getElementById("confirmPassword").value;
+		const username = document.getElementById("username").value;
+		const email = document.getElementById("email").value;
+		
+		if (!usernameRegex.test(username)) {
+			msgBox.textContent = "Username must be 3-16 characters; A-Z, a-z, 0-9, ., _, -"
+		}
+
+        if (!passwordRegex.test(newPassword)) {
+            msgBox.textContent = "Password must be between 6 and 128 characters.";
+            return;
+        }
+		
+		if (!(newPassword === confirm)) {
+			msgBox.textContent += "Passwords do not match"
+			return;
+		}
+
+        msgBox.textContent = "Submitting...";
+
+        try {
+			
+			let body = {};
+			body.oldPassword = guestPassword;
+			body.username = username;
+			body.newPassword = newPassword;
+			
+			if (email) {
+				body.email = email
+			}
+		
+            const res = await fetch("https://api.genjig.com/api/users/update", {
+                method: "POST",
+                headers: { 
+					"Content-Type": "application/json",
+					"Authorization": "Bearer " + sessionJWT
+				},
+                body: JSON.stringify(body)
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+                msgBox.textContent = data.error;
+            } else {
+                msgBox.textContent = data.success || "Registered!";
+                document.getElementById("registerForm").style.display = "none";
+            }
+        } catch (err) {
+			console.log(err);
+            msgBox.textContent = "An error occurred.";
+        }
+    });
+</script>
+</body>
+</html>
