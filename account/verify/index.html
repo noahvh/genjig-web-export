@@ -24,37 +24,36 @@
 	
 	try {
 			
-			let body = {};
-			body.userId = parseInt(userId);
-			body.verificationToken = verificationToken;
-					
-            const res = await fetch("https://api.genjig.com/v1/auth/verify-email", {
-                method: "POST",
-                headers: { 
-					"Content-Type": "application/json"
-				},
-                body: JSON.stringify(body)
-            });
-			
-			if (!res.ok) {
-				msgBox.textContent = "Server error: " + res.status;
-				return;
-			}
+		let body = {};
+		body.userId = parseInt(userId);
+		body.verificationToken = verificationToken;
+				
+		const res = await fetch("https://api.genjig.com/v1/auth/verify-email", {
+			method: "POST",
+			headers: { 
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(body)
+		});
+		
+		if (!res.ok) {
+			msgBox.textContent = "Server error: " + res.status;
+		} else {
+			const data = await res.json();
 
-            const data = await res.json();
-
-            if (data.error) {
-                msgBox.textContent = data.error;
-            } else {
+			if (data.error) {
+				msgBox.textContent = data.error;
+			} else {
 				let u = data.username;
 				let e = data.email;
-                msgBox.textContent = "Email verified! Email for user " + data.username + " is now set to " + data.email;
-            }
-        } catch (err) {
-			console.log(err);
-            msgBox.textContent = "An error occurred.";
-        }
-    );
+				msgBox.textContent = "Email verified! Email for user " + data.username + " is now set to " + data.email;
+			}
+		}
+		
+	} catch (err) {
+		console.log(err);
+		msgBox.textContent = "An error occurred.";
+	}
 
 </script>
 </body>
