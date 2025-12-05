@@ -9,7 +9,7 @@
 
 <div id="msg"></div>
 
-<script>
+<script type="module">
     const params = new URLSearchParams(window.location.search);
     const userId = params.get("id");
 	const verificationToken = params.get("t");
@@ -17,6 +17,8 @@
 	window.history.replaceState({}, document.title, window.location.pathname);
 
     const msgBox = document.getElementById("msg");
+	
+	msgBox.textContent = "Verifying...";
 
     if (!userId || !verificationToken) {
         msgBox.textContent = "Bad page, please try again";
