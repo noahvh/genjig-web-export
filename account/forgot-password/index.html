@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Genjig password reset</title>
+</head>
+<body>
+<h2>Reset password</h2>
+
+<div id="msg"></div>
+
+<form id="resetForm">
+	<label for="email">Enter the email address associated with your account. A password reset link will be sent if the account exists.</label></br>
+	<input type="email" id="email" placeholder="email address" required /></br>
+    <button type="submit">Request reset</button>
+</form>
+
+<script>
+    const msgBox = document.getElementById("msg");
+
+    document.getElementById("resetForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+		const email = document.getElementById("email").value;
+
+        msgBox.textContent = "Submitting...";
+
+        try {		
+            const res = await fetch("https://api.genjig.com/v1/auth/forgot-password?email=" + encodeURIComponent(email), {
+                method: "POST",
+                headers: { 
+					"Content-Type": "application/json"
+				},
+                body: JSON.stringify(body)
+            });
+			
+			if (!res.ok) {
+				msgBox.textContent = "Server error: " + res.status;
+				return;
+			}
+
+            const data = await res.json();
+
+            if (data.error) {
+                msgBox.textContent = data.error;
+            } else {
+                msgBox.textContent = "Request received. Email sent if applicable.";
+            }
+        } catch (err) {
+			console.log(err);
+            msgBox.textContent = "An error occurred.";
+        }
+    });
+</script>
+</body>
+</html>

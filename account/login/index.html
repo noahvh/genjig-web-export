@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Genjig login</title>
+</head>
+<body>
+<h2>Log in</h2>
+
+<div id="msg"></div>
+
+<form id="loginForm">
+	<label for="username">Username or email address</label></br>
+	<input type="text" id="username" placeholder="Username/Email" required /></br>
+	<label for="password">Password</label></br>
+    <input type="password" id="password" placeholder="Password" required minlength="6" maxlength="128" /></br>
+    <button type="submit">Log in!</button>
+</form>
+
+<script>
+    const msgBox = document.getElementById("msg");
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+		const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        msgBox.textContent = "Submitting...";
+
+        try {
+			
+			let body = {};
+			body.username = username;
+			body.password = password;
+		
+            const res = await fetch("https://api.genjig.com/v1/auth/login", {
+                method: "POST",
+                headers: { 
+					"Content-Type": "application/json"
+				},
+                body: JSON.stringify(body)
+            });
+			
+			console.log(JSON.stringify(body));
+			console.log(res)
+			
+			if (!res.ok) {
+				msgBox.textContent = "Server error: " + res.status;
+				return;
+			}
+
+            const data = await res.json();
+
+            if (data.error) {
+                msgBox.textContent = data.error;
+            } else {
+                msgBox.textContent = "Logged in! Redirecting back to game...";
+				setTimeout(() => {
+					window.location.href = window.location.origin + "/?v=" + encodeURIComponent(data.v) + "&p=" + encodeURIComponent(data.p);
+				}, 3000);
+            }
+        } catch (err) {
+			console.log(err);
+            msgBox.textContent = "An error occurred.";
+        }
+    });
+</script>
+</body>
+</html>

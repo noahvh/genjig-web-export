@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Genjig email verification</title>
+</head>
+<body>
+<h2>Email verification page</h2>
+
+<div id="msg"></div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get("id");
+	const verificationToken = params.get("t");
+	
+	window.history.replaceState({}, document.title, window.location.pathname);
+
+    const msgBox = document.getElementById("msg");
+
+    if (!userId || !verificationToken) {
+        msgBox.textContent = "Bad page, please try again";
+    }
+	
+	try {
+			
+			let body = {};
+			body.userId = parseInt(userId);
+			body.verificationToken = verificationToken;
+					
+            const res = await fetch("https://api.genjig.com/v1/auth/verify-email", {
+                method: "POST",
+                headers: { 
+					"Content-Type": "application/json"
+				},
+                body: JSON.stringify(body)
+            });
+			
+			if (!res.ok) {
+				msgBox.textContent = "Server error: " + res.status;
+				return;
+			}
+
+            const data = await res.json();
+
+            if (data.error) {
+                msgBox.textContent = data.error;
+            } else {
+				let u = data.username;
+				let e = data.email;
+                msgBox.textContent = "Email verified! Email for user " + data.username + " is now set to " + data.email;
+            }
+        } catch (err) {
+			console.log(err);
+            msgBox.textContent = "An error occurred.";
+        }
+    );
+
+</script>
+</body>
+</html>
