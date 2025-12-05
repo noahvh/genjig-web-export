@@ -13,8 +13,6 @@
     const params = new URLSearchParams(window.location.search);
     const userId = params.get("id");
 	const verificationToken = params.get("t");
-	
-	window.history.replaceState({}, document.title, window.location.pathname);
 
     const msgBox = document.getElementById("msg");
 	
