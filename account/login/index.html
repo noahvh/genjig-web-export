@@ -42,9 +42,6 @@
                 body: JSON.stringify(body)
             });
 			
-			console.log(JSON.stringify(body));
-			console.log(res)
-			
 			if (!res.ok) {
 				msgBox.textContent = "Server error: " + res.status;
 				return;
